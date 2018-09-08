@@ -24,8 +24,8 @@ connection.connect(function(err) {
   console.log("______________________________________________");
   console.log("Availiable Products: ");
   readProducts();
-  setTimeout(firstQuestions,500);
-  buy();
+  setTimeout(firstQuestions, 500);
+  setTimeout(buy, 550);
 });
 
 function firstQuestions() {
@@ -33,8 +33,17 @@ function firstQuestions() {
   console.log("Also How much would you like to buy?");
 }
 
-function buy() {
-  console.log("You want to buy " + quantityToBuy + "," + productToBuy + "!" );
+function buy(productToBuy, quantityToBuy) {
+  var query = "SELECT product_name FROM products WHERE item_id = " + productToBuy;
+  connection.query(query, function(err, res) {
+    console.log(res);
+    for (var i = 0; i < res.length; i++) {
+      console.log(res[i]);
+    }
+    console.log("You want to buy " + quantityToBuy + "," + productToBuy + "!" );
+  });
+
+ 
 }
 
 function createProduct() {
