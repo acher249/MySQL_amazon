@@ -1,0 +1,23 @@
+{
+  "name": "ice-cream-crud",
+  "version": "1.0.0",
+  "description": "MySQL_amazon",
+  "main": "iceCreamCRUD.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "inquirer": "^6.2.0",
+    "mysql": "^2.13.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/acher249/MySQL_amazon.git"
+  },
+  "bugs": {
+    "url": "https://github.com/acher249/MySQL_amazon/issues"
+  },
+  "homepage": "https://github.com/acher249/MySQL_amazon#readme"
+}
