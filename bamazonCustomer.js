@@ -36,6 +36,7 @@ function firstQuestions() {
 //STUCK HERE*****
 // My quesry comes back as undefined
 // Also was having trouble with inquirer.. Need to better understand how that works
+// you can see what i tried in the other js file..
 function buy(productToBuy, quantityToBuy) {
   var query = "SELECT product_name FROM products WHERE item_id = " + productToBuy;
   connection.query(query, function(err, res) {
