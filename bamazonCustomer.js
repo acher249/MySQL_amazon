@@ -46,9 +46,9 @@ function runSearch() {
         buyProduct();
         break;  
 
-      // case "Find all artists who appear more than once":
-      //   // multiSearch();
-      //   break;
+      case "Find all artists who appear more than once":
+        // multiSearch();
+        break;
 
       // case "Find data within a specific range":
       //   // rangeSearch();
@@ -78,12 +78,11 @@ function buyProduct() {
       //Now grab this specific piece of data
       connection.query(query, { item_id: answer.item_id }, function(err, res) {
         //response is going to be all of the associated data to that artist
-        // for (var i = 0; i < res.length; i++) {
-        //   console.log("Department: " + res[i].department + " || Price: " + res[i].price + " || Stock: " + res[i].stock_quantity);
-        // }
-        console.log(res);
-        // console.log("Department: " + res.department + " || Price: " + res.price + " || Stock: " + res.stock_quantity);
-        // runSearch();
+        // needs to be a loop because the data is structured in an array.
+        for (var i = 0; i < res.length; i++) {
+          console.log("Department: " + res[i].department + " || Price: " + res[i].price + " || Stock: " + res[i].stock_quantity);
+        }
+        runSearch();
       });
     });
 }
@@ -227,13 +226,14 @@ function songAndAlbumSearch() {
     });
 }
 
+
 function readProducts() {
   // console.log("Selecting all products...\n");
   connection.query("SELECT * FROM products", function(err, res) {
     if (err) throw err;
     // Log all results of the SELECT statement
     console.log(res);
-    connection.end();
+    //
+    // connection.end();
   });
 }
-
