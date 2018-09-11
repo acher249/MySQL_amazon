@@ -15,100 +15,216 @@ var connection = mysql.createConnection({
   database: "bamazon"
 });
 
-var productToBuy = process.argv[2];
-var quantityToBuy = process.argv[3];
-
 connection.connect(function(err) {
   if (err) throw err;
-  console.log("connected as id " + connection.threadId + "\n");
-  console.log("______________________________________________");
-  console.log("Availiable Products: ");
   readProducts();
-  setTimeout(firstQuestions, 500);
-  setTimeout(buy, 550);
+  setTimeout(runSearch, 500);
 });
 
-function firstQuestions() {
-  console.log("What would you like to buy? (product id)");
-  console.log("Also How much would you like to buy?");
+function runSearch() {
+  inquirer
+    .prompt({
+      name: "action",
+      type: "rawlist",
+      message: "What would you like to do?",
+      choices: [
+        "Buy a product",
+        "View all products"
+        // "Find all artists who appear more than once",
+        // "Find data within a specific range",
+        // "Search for a specific song",
+        // "Find artists with a top song and top album in the same year"
+      ]
+    })
+    .then(function(answer) {
+      switch (answer.action) {
+      // case "Find songs by artist":
+      //   artistSearch();
+      //   break;
+
+      case "Buy a product":
+        buyProduct();
+        break;  
+
+      // case "Find all artists who appear more than once":
+      //   // multiSearch();
+      //   break;
+
+      // case "Find data within a specific range":
+      //   // rangeSearch();
+      //   break;
+
+      // case "Search for a specific song":
+      //   // songSearch();
+      //   break;
+
+      // case "Find artists with a top song and top album in the same year":
+      //   // songAndAlbumSearch();
+      //   break;
+      }
+    });
 }
 
-//STUCK HERE*****
-// My quesry comes back as undefined
-// Also was having trouble with inquirer.. Need to better understand how that works
-// you can see what i tried in the other js file..
-function buy(productToBuy, quantityToBuy) {
-  var query = "SELECT product_name FROM products WHERE item_id = " + productToBuy;
+function buyProduct() {
+  inquirer
+    .prompt({
+      name: "item_id",
+      type: "input",
+      message: "What product would you like to buy? (enter ID)"
+    })
+    .then(function(answer) {
+      //give me all these things out of the DB
+      var query = "SELECT product_name, department, price, stock_quantity FROM products WHERE ?";
+      //Now grab this specific piece of data
+      connection.query(query, { item_id: answer.item_id }, function(err, res) {
+        //response is going to be all of the associated data to that artist
+        // for (var i = 0; i < res.length; i++) {
+        //   console.log("Department: " + res[i].department + " || Price: " + res[i].price + " || Stock: " + res[i].stock_quantity);
+        // }
+        console.log(res);
+        // console.log("Department: " + res.department + " || Price: " + res.price + " || Stock: " + res.stock_quantity);
+        // runSearch();
+      });
+    });
+}
+
+
+function artistSearch() {
+  inquirer
+    .prompt({
+      name: "artist",
+      type: "input",
+      message: "What artist would you like to search for?"
+    })
+    .then(function(answer) {
+      //give me all these things out of the DB
+      var query = "SELECT position, song, year FROM top5000 WHERE ?";
+      //Now grab this specific piece of data
+      connection.query(query, { artist: answer.artist }, function(err, res) {
+        //response is going to be all of the associated data to that artist
+        for (var i = 0; i < res.length; i++) {
+          console.log("Position: " + res[i].position + " || Song: " + res[i].song + " || Year: " + res[i].year);
+        }
+        runSearch();
+      });
+    });
+}
+
+function multiSearch() {
+  // dont understand this query
+  var query = "SELECT artist FROM top5000 GROUP BY artist HAVING count(*) > 1";
+  //not inputing anything
   connection.query(query, function(err, res) {
-    console.log(res);
     for (var i = 0; i < res.length; i++) {
-      console.log(res[i]);
+      console.log(res[i].artist);
     }
-    console.log("You want to buy " + quantityToBuy + "," + productToBuy + "!" );
+    runSearch();
   });
-
- 
 }
 
-function createProduct() {
-  console.log("Inserting a new product...\n");
-  var query = connection.query(
-    "INSERT INTO products SET ?",
-    {
-      item_id: 006,
-      product_name: 3.0,
-      department: "home products",
-      price: 30,
-      stock_quantity,
-    },
-    function(err, res) {
-      console.log(res.affectedRows + " product inserted!\n");
-      // Call updateProduct AFTER the INSERT completes
-      // updateProduct();
-    }
-  );
-
-  // logs the actual query being run
-  console.log(query.sql);
-}
-
-function updateProduct() {
-  console.log("Updating all Rocky Road quantities...\n");
-  var query = connection.query(
-    "UPDATE products SET ? WHERE ?",
-    [
-      //is this OR or AND?
+function rangeSearch() {
+  inquirer
+    .prompt([
       {
-        product_name: "shoes" 
+        name: "start",
+        type: "input",
+        message: "Enter starting position: ",
+        validate: function(value) {
+          if (isNaN(value) === false) {
+            return true;
+          }
+          return false;
+        }
       },
       {
-        department: "home products"
+        name: "end",
+        type: "input",
+        message: "Enter ending position: ",
+        validate: function(value) {
+          if (isNaN(value) === false) {
+            return true;
+          }
+          return false;
+        }
       }
-    ],
-    function(err, res) {
-      console.log(res.affectedRows + " products updated!\n");
-      // Call deleteProduct AFTER the UPDATE completes
-      // deleteProduct();
-    }
-  );
-
-  // logs the actual query being run
-  console.log(query.sql);
+    ])
+    .then(function(answer) {
+      var query = "SELECT position,song,artist,year FROM top5000 WHERE position BETWEEN ? AND ?";
+      connection.query(query, [answer.start, answer.end], function(err, res) {
+        for (var i = 0; i < res.length; i++) {
+          console.log(
+            "Position: " +
+              res[i].position +
+              " || Song: " +
+              res[i].song +
+              " || Artist: " +
+              res[i].artist +
+              " || Year: " +
+              res[i].year
+          );
+        }
+        runSearch();
+      });
+    });
 }
 
-function deleteProduct() {
-  console.log("Deleting all strawberry icecream...\n");
-  connection.query(
-    "DELETE FROM products WHERE ?",
-    {
-      department: "home products"
-    },
-    function(err, res) {
-      console.log(res.affectedRows + " products deleted!\n");
-      // Call readProducts AFTER the DELETE completes
-      // readProducts();
-    }
-  );
+function songSearch() {
+  inquirer
+    .prompt({
+      name: "song",
+      type: "input",
+      message: "What song would you like to look for?"
+    })
+    .then(function(answer) {
+      console.log(answer.song);
+      connection.query("SELECT * FROM top5000 WHERE ?", { song: answer.song }, function(err, res) {
+        console.log(
+          "Position: " +
+            res[0].position +
+            " || Song: " +
+            res[0].song +
+            " || Artist: " +
+            res[0].artist +
+            " || Year: " +
+            res[0].year
+        );
+        runSearch();
+      });
+    });
+}
+
+function songAndAlbumSearch() {
+  inquirer
+    .prompt({
+      name: "artist",
+      type: "input",
+      message: "What artist would you like to search for?"
+    })
+    .then(function(answer) {
+      var query = "SELECT top_albums.year, top_albums.album, top_albums.position, top5000.song, top5000.artist ";
+      query += "FROM top_albums INNER JOIN top5000 ON (top_albums.artist = top5000.artist AND top_albums.year ";
+      query += "= top5000.year) WHERE (top_albums.artist = ? AND top5000.artist = ?) ORDER BY top_albums.year ";
+
+      connection.query(query, [answer.artist, answer.artist], function(err, res) {
+        console.log(res.length + " matches found!");
+        for (var i = 0; i < res.length; i++) {
+          console.log(
+            "Album Position: " +
+              res[i].position +
+              " || Artist: " +
+              res[i].artist +
+              " || Song: " +
+              res[i].song +
+              " || Album: " +
+              res[i].album +
+              " || Year: " +
+              res[i].year
+          );
+        }
+
+        runSearch();
+      });
+    });
 }
 
 function readProducts() {
@@ -120,3 +236,4 @@ function readProducts() {
     connection.end();
   });
 }
+
